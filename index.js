@@ -1,12 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
 
 // Middleware
 app.use(bodyParser.json());
+app.use(cors());
 
 // MongoDB Atlas connection
 const mongoURI = 'mongodb+srv://sanjayksanthosh55:nxiW0AEFy8XhbSOj@cluster0.yrimhnb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
