@@ -21,7 +21,8 @@ const ItemSchema = new mongoose.Schema({
   name: String,
   description: String,
   price: Number,
-  category:String
+  category:String,
+  image:String
 });
 
 const Item = mongoose.model('Item', ItemSchema);
