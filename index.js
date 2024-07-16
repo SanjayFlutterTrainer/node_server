@@ -19,7 +19,8 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 // Define a simple schema and model
 const ItemSchema = new mongoose.Schema({
   name: String,
-  quantity: Number
+  description: String,
+  price: Number,
 });
 
 const Item = mongoose.model('Item', ItemSchema);
