@@ -30,7 +30,7 @@ id:String
 });
 
 const Item = mongoose.model('Item', ItemSchema);
-const Category = mongoose.model('category', CategorySchema);
+const Category = mongoose.model('Category', CategorySchema);
 // CRUD operations
 // Create
 app.post('/items', async (req, res) => {
