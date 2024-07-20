@@ -24,9 +24,13 @@ const ItemSchema = new mongoose.Schema({
   category:String,
   image:String
 });
+const CategorySchema = new mongoose.Schema({
+  name: String,
+id:String
+});
 
 const Item = mongoose.model('Item', ItemSchema);
-
+const Category = mongoose.model('category', ItemSchema);
 // CRUD operations
 // Create
 app.post('/items', async (req, res) => {
@@ -48,6 +52,17 @@ app.get('/items', async (req, res) => {
     res.status(400).send(err);
   }
 });
+
+// Read category
+app.get('/category', async (req, res) => {
+  try {
+    const items = await Item.find();
+    res.status(200).send(items);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 
 // Update
 app.put('/items/:id', async (req, res) => {
