@@ -21,18 +21,20 @@ const ItemSchema = new mongoose.Schema({
   name: String,
   description: String,
   price: Number,
-  category:String,
-  image:String
+  category: String,
+  image: String
 });
+
 const CategorySchema = new mongoose.Schema({
   name: String,
-id:String
+  id: String
 });
 
 const Item = mongoose.model('Item', ItemSchema);
 const Category = mongoose.model('Category', CategorySchema);
-// CRUD operations
-// Create
+
+// CRUD operations for Items
+// Create Item
 app.post('/items', async (req, res) => {
   const newItem = new Item(req.body);
   try {
@@ -43,7 +45,7 @@ app.post('/items', async (req, res) => {
   }
 });
 
-// Read
+// Read Items
 app.get('/items', async (req, res) => {
   try {
     const items = await Item.find();
@@ -53,18 +55,7 @@ app.get('/items', async (req, res) => {
   }
 });
 
-// Read category
-app.get('/category', async (req, res) => {
-  try {
-    const category = await Category.find();
-    res.status(200).send(category);
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
-
-// Update
+// Update Item
 app.put('/items/:id', async (req, res) => {
   try {
     const item = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -77,7 +68,7 @@ app.put('/items/:id', async (req, res) => {
   }
 });
 
-// Delete
+// Delete Item
 app.delete('/items/:id', async (req, res) => {
   try {
     const item = await Item.findByIdAndDelete(req.params.id);
@@ -85,6 +76,28 @@ app.delete('/items/:id', async (req, res) => {
       return res.status(404).send();
     }
     res.status(200).send(item);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// CRUD operations for Categories
+// Create Category
+app.post('/category', async (req, res) => {
+  const newCategory = new Category(req.body);
+  try {
+    const category = await newCategory.save();
+    res.status(201).send(category);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Read Categories
+app.get('/category', async (req, res) => {
+  try {
+    const categories = await Category.find();
+    res.status(200).send(categories);
   } catch (err) {
     res.status(400).send(err);
   }
