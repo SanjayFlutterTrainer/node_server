@@ -103,6 +103,17 @@ app.get('/category', async (req, res) => {
   }
 });
 
+
+app.get('/items/category/:id', async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const items = await Item.find({ category: categoryId });
+    res.status(200).send(items);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
