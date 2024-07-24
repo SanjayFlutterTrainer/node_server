@@ -52,7 +52,7 @@ app.post('/items', async (req, res) => {
 });
 
 // Read Items
-app.get('/order', async (req, res) => {
+app.get('/items', async (req, res) => {
   try {
     const items = await Item.find();
     res.status(200).send(items);
@@ -63,10 +63,10 @@ app.get('/order', async (req, res) => {
 
 
 app.post('/order', async (req, res) => {
-  const newItem = new Item(req.body);
+  const newOrder = new Order(req.body);
   try {
-    const item = await newItem.save();
-    res.status(201).send(item);
+    const order = await newOrder.save();
+    res.status(201).send(order);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -75,8 +75,8 @@ app.post('/order', async (req, res) => {
 // Read Items
 app.get('/order', async (req, res) => {
   try {
-    const items = await Item.find();
-    res.status(200).send(items);
+    const order = await Order.find();
+    res.status(200).send(order);
   } catch (err) {
     res.status(400).send(err);
   }
