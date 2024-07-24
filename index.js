@@ -30,7 +30,7 @@ const CategorySchema = new mongoose.Schema({
   id: String
 });
 const OrderSchema = new mongoose.Schema({
-    items: List,
+    items: Array,
   datatime:String
 
 });
