@@ -29,9 +29,15 @@ const CategorySchema = new mongoose.Schema({
   name: String,
   id: String
 });
+const OrderSchema = new mongoose.Schema({
+    items: List,
+  datatime:String
+
+});
 
 const Item = mongoose.model('Item', ItemSchema);
 const Category = mongoose.model('Category', CategorySchema);
+const Order = mongoose.model('Order', OrderSchema);
 
 // CRUD operations for Items
 // Create Item
@@ -46,7 +52,28 @@ app.post('/items', async (req, res) => {
 });
 
 // Read Items
-app.get('/items', async (req, res) => {
+app.get('/order', async (req, res) => {
+  try {
+    const items = await Item.find();
+    res.status(200).send(items);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+
+app.post('/order', async (req, res) => {
+  const newItem = new Item(req.body);
+  try {
+    const item = await newItem.save();
+    res.status(201).send(item);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Read Items
+app.get('/order', async (req, res) => {
   try {
     const items = await Item.find();
     res.status(200).send(items);
