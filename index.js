@@ -31,7 +31,8 @@ const CategorySchema = new mongoose.Schema({
 });
 const OrderSchema = new mongoose.Schema({
     items: Array,
-  datetime:String
+  datetime:String,
+  total:Number
 
 });
 
