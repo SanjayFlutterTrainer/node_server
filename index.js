@@ -83,6 +83,22 @@ app.get('/order', async (req, res) => {
   }
 });
 
+app.get('/items/search', async (req, res) => {
+  const name = req.query.name;
+  if (!name) {
+    return res.status(400).send({ error: 'Name query parameter is required' });
+  }
+
+  try {
+    // Perform case-insensitive search
+    const items = await Item.find({ name: { $regex: new RegExp(name, 'i') } });
+    res.status(200).send(items);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+
 // Update Item
 app.put('/items/:id', async (req, res) => {
   try {
