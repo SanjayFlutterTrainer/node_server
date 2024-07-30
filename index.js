@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = 3000;
@@ -16,7 +18,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log(err));
 
-// Define a simple schema and model
+// Define schemas and models
 const ItemSchema = new mongoose.Schema({
   name: String,
   description: String,
@@ -29,16 +31,22 @@ const CategorySchema = new mongoose.Schema({
   name: String,
   id: String
 });
-const OrderSchema = new mongoose.Schema({
-    items: Array,
-  datetime:String,
-  total:Number
 
+const OrderSchema = new mongoose.Schema({
+  items: Array,
+  datetime: String,
+  total: Number
+});
+
+const UserSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 });
 
 const Item = mongoose.model('Item', ItemSchema);
 const Category = mongoose.model('Category', CategorySchema);
 const Order = mongoose.model('Order', OrderSchema);
+const User = mongoose.model('User', UserSchema);
 
 // CRUD operations for Items
 // Create Item
@@ -62,7 +70,6 @@ app.get('/items', async (req, res) => {
   }
 });
 
-
 app.post('/order', async (req, res) => {
   const newOrder = new Order(req.body);
   try {
@@ -73,7 +80,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Read Items
+// Read Orders
 app.get('/order', async (req, res) => {
   try {
     const order = await Order.find();
@@ -90,14 +97,12 @@ app.get('/items/search', async (req, res) => {
   }
 
   try {
-    // Perform case-insensitive search
     const items = await Item.find({ name: { $regex: new RegExp(name, 'i') } });
     res.status(200).send(items);
   } catch (err) {
     res.status(400).send(err);
   }
 });
-
 
 // Update Item
 app.put('/items/:id', async (req, res) => {
@@ -147,7 +152,6 @@ app.get('/category', async (req, res) => {
   }
 });
 
-
 app.get('/items/category/:id', async (req, res) => {
   try {
     const categoryId = req.params.id;
@@ -156,6 +160,69 @@ app.get('/items/category/:id', async (req, res) => {
   } catch (err) {
     res.status(400).send(err);
   }
+});
+
+// User registration
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).send({ error: 'Username and password are required' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword });
+    const user = await newUser.save();
+    res.status(201).send(user);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// User login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).send({ error: 'Username and password are required' });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).send({ error: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).send({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+    res.status(200).send({ token });
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Middleware to verify token
+const auth = (req, res, next) => {
+  const token = req.header('Authorization');
+  if (!token) {
+    return res.status(401).send({ error: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(400).send({ error: 'Token is not valid' });
+  }
+};
+
+// Protect routes (example of protected route)
+app.get('/protected', auth, (req, res) => {
+  res.status(200).send({ msg: 'This is a protected route', user: req.user });
 });
 
 app.listen(port, () => {
