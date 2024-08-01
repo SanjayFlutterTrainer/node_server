@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = 3000;
@@ -12,11 +15,29 @@ const port = 3000;
 app.use(bodyParser.json());
 app.use(cors());
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
 // MongoDB Atlas connection
 const mongoURI = 'mongodb+srv://sanjayksanthosh55:nxiW0AEFy8XhbSOj@cluster0.yrimhnb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log(err));
+
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
 
 // Define schemas and models
 const ItemSchema = new mongoose.Schema({
@@ -40,7 +61,11 @@ const OrderSchema = new mongoose.Schema({
 
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  name: { type: String, required: true },
+  phone: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  image: { type: String }
 });
 
 const Item = mongoose.model('Item', ItemSchema);
@@ -163,15 +188,22 @@ app.get('/items/category/:id', async (req, res) => {
 });
 
 // User registration
-app.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).send({ error: 'Username and password are required' });
+app.post('/register', upload.single('image'), async (req, res) => {
+  const { username, password, name, phone, email } = req.body;
+  if (!username || !password || !name || !phone || !email) {
+    return res.status(400).send({ error: 'All fields are required' });
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+      name,
+      phone,
+      email,
+      image: req.file ? req.file.path : ''
+    });
     const user = await newUser.save();
     res.status(201).send(user);
   } catch (err) {
@@ -206,7 +238,7 @@ app.post('/login', async (req, res) => {
 
 // Middleware to verify token
 const auth = (req, res, next) => {
-  const token = req.header('Authorization');
+  const token = req.header('Authorization').replace('Bearer ', '');
   if (!token) {
     return res.status(401).send({ error: 'No token, authorization denied' });
   }
@@ -216,9 +248,88 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
+    console.log('Token verification error:', err);
     res.status(400).send({ error: 'Token is not valid' });
   }
 };
+// Get user information by token
+app.get('/user/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Get user information by ID
+app.get('/user/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Get all users
+app.get('/users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.status(200).send(users);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Update User
+app.put('/user/:id', upload.single('image'), async (req, res) => {
+  const { username, password, name, phone, email } = req.body;
+
+  // Ensure the user exists
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+
+    // Update user details
+    user.username = username || user.username;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    user.email = email || user.email;
+    if (req.file) {
+      user.image = req.file.path;
+    }
+
+    const updatedUser = await user.save();
+    res.status(200).send(updatedUser);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Delete User
+app.delete('/user/:id', async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+    res.status(200).send({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
 
 // Protect routes (example of protected route)
 app.get('/protected', auth, (req, res) => {
