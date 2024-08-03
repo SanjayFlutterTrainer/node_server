@@ -15,6 +15,8 @@ const port = 3000;
 app.use(bodyParser.json());
 app.use(cors());
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -202,7 +204,7 @@ app.post('/register', upload.single('image'), async (req, res) => {
       name,
       phone,
       email,
-      image: req.file ? req.file.path : ''
+      image: req.file ? `uploads/${req.file.filename}` : ''
     });
     const user = await newUser.save();
     res.status(201).send(user);
@@ -210,6 +212,7 @@ app.post('/register', upload.single('image'), async (req, res) => {
     res.status(400).send(err);
   }
 });
+
 
 // User login
 app.post('/login', async (req, res) => {
