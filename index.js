@@ -47,7 +47,10 @@ const ItemSchema = new mongoose.Schema({
   description: String,
   price: Number,
   category: String,
-  image: String
+  image: String,
+  newprice:Number,
+  rating:String,
+  discount:String
 });
 
 const CategorySchema = new mongoose.Schema({
