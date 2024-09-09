@@ -76,8 +76,14 @@ const CoffeeSchema = new mongoose.Schema({
   name: String,
   description: String,
   price: Number,
-  image: String
+  image: String,
+  roastLevel: String,
+  rating: String,
+  size: String // Updated to be a single string
 });
+
+const Coffee = mongoose.model('Coffee', CoffeeSchema);
+
 
 const Coffee = mongoose.model('Coffee', CoffeeSchema);
 
@@ -204,7 +210,8 @@ app.get('/items/category/:id', async (req, res) => {
 //cofee
 // Create Coffee
 app.post('/coffee', upload.single('image'), async (req, res) => {
-  const { name, description, price } = req.body;
+  const { name, description, price, roastLevel, rating, size } = req.body;
+  
   if (!name || !price) {
     return res.status(400).send({ error: 'Name and price are required' });
   }
@@ -214,7 +221,10 @@ app.post('/coffee', upload.single('image'), async (req, res) => {
       name,
       description,
       price,
-      image: req.file ? `uploads/${req.file.filename}` : ''
+      image: req.file ? `uploads/${req.file.filename}` : '',
+      roastLevel,
+      rating,
+      size // Directly handle size as a string
     });
     const coffee = await newCoffee.save();
     res.status(201).send(coffee);
@@ -233,7 +243,6 @@ app.get('/coffee', async (req, res) => {
   }
 });
 
-// Read Coffee by ID
 app.get('/coffee/:id', async (req, res) => {
   try {
     const coffee = await Coffee.findById(req.params.id);
@@ -246,9 +255,10 @@ app.get('/coffee/:id', async (req, res) => {
   }
 });
 
+
 // Update Coffee
 app.put('/coffee/:id', upload.single('image'), async (req, res) => {
-  const { name, description, price } = req.body;
+  const { name, description, price, roastLevel, rating, size } = req.body;
 
   try {
     const coffee = await Coffee.findById(req.params.id);
@@ -259,6 +269,9 @@ app.put('/coffee/:id', upload.single('image'), async (req, res) => {
     coffee.name = name || coffee.name;
     coffee.description = description || coffee.description;
     coffee.price = price || coffee.price;
+    coffee.roastLevel = roastLevel || coffee.roastLevel;
+    coffee.rating = rating || coffee.rating;
+    coffee.size = size || coffee.size; // Directly handle size as a string
     if (req.file) {
       coffee.image = req.file.path;
     }
@@ -269,6 +282,7 @@ app.put('/coffee/:id', upload.single('image'), async (req, res) => {
     res.status(400).send(err);
   }
 });
+
 
 // Delete Coffee
 app.delete('/coffee/:id', async (req, res) => {
