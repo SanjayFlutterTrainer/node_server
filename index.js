@@ -72,6 +72,15 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   image: { type: String }
 });
+const CoffeeSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number,
+  image: String
+});
+
+const Coffee = mongoose.model('Coffee', CoffeeSchema);
+
 
 const Item = mongoose.model('Item', ItemSchema);
 const Category = mongoose.model('Category', CategorySchema);
@@ -191,6 +200,91 @@ app.get('/items/category/:id', async (req, res) => {
     res.status(400).send(err);
   }
 });
+
+//cofee
+// Create Coffee
+app.post('/coffee', upload.single('image'), async (req, res) => {
+  const { name, description, price } = req.body;
+  if (!name || !price) {
+    return res.status(400).send({ error: 'Name and price are required' });
+  }
+
+  try {
+    const newCoffee = new Coffee({
+      name,
+      description,
+      price,
+      image: req.file ? `uploads/${req.file.filename}` : ''
+    });
+    const coffee = await newCoffee.save();
+    res.status(201).send(coffee);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Read Coffee (All)
+app.get('/coffee', async (req, res) => {
+  try {
+    const coffees = await Coffee.find();
+    res.status(200).send(coffees);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Read Coffee by ID
+app.get('/coffee/:id', async (req, res) => {
+  try {
+    const coffee = await Coffee.findById(req.params.id);
+    if (!coffee) {
+      return res.status(404).send({ error: 'Coffee not found' });
+    }
+    res.status(200).send(coffee);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Update Coffee
+app.put('/coffee/:id', upload.single('image'), async (req, res) => {
+  const { name, description, price } = req.body;
+
+  try {
+    const coffee = await Coffee.findById(req.params.id);
+    if (!coffee) {
+      return res.status(404).send({ error: 'Coffee not found' });
+    }
+
+    coffee.name = name || coffee.name;
+    coffee.description = description || coffee.description;
+    coffee.price = price || coffee.price;
+    if (req.file) {
+      coffee.image = req.file.path;
+    }
+
+    const updatedCoffee = await coffee.save();
+    res.status(200).send(updatedCoffee);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Delete Coffee
+app.delete('/coffee/:id', async (req, res) => {
+  try {
+    const coffee = await Coffee.findByIdAndDelete(req.params.id);
+    if (!coffee) {
+      return res.status(404).send({ error: 'Coffee not found' });
+    }
+    res.status(200).send({ message: 'Coffee deleted successfully' });
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+
+
 
 // User registration
 app.post('/register', upload.single('image'), async (req, res) => {
