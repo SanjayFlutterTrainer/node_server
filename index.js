@@ -85,7 +85,7 @@ const CoffeeSchema = new mongoose.Schema({
 const Coffee = mongoose.model('Coffee', CoffeeSchema);
 
 
-const Coffee = mongoose.model('Coffee', CoffeeSchema);
+
 
 
 const Item = mongoose.model('Item', ItemSchema);
