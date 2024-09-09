@@ -210,8 +210,8 @@ app.get('/items/category/:id', async (req, res) => {
 //cofee
 // Create Coffee
 app.post('/coffee', upload.single('image'), async (req, res) => {
-  const { name, description, price, roastLevel, rating, size } = req.body;
-  
+  const { name, description, price, roastLevel, rating, size, category } = req.body;
+
   if (!name || !price) {
     return res.status(400).send({ error: 'Name and price are required' });
   }
@@ -224,7 +224,8 @@ app.post('/coffee', upload.single('image'), async (req, res) => {
       image: req.file ? `uploads/${req.file.filename}` : '',
       roastLevel,
       rating,
-      size // Directly handle size as a string
+      size,
+      category // Handle category
     });
     const coffee = await newCoffee.save();
     res.status(201).send(coffee);
@@ -232,6 +233,7 @@ app.post('/coffee', upload.single('image'), async (req, res) => {
     res.status(400).send(err);
   }
 });
+
 
 // Read Coffee (All)
 app.get('/coffee', async (req, res) => {
