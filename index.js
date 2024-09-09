@@ -24,7 +24,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // MongoDB Atlas connection
-const mongoURI = "mongodb+srv://test:<test>@cluster0.6da5u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongoURI = "mongodb+srv://test:<8AJlGBX0nuKSp6cu>@cluster0.6da5u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected...'))
