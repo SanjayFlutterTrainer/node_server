@@ -13,6 +13,7 @@ const port = 3000;
 
 // Middleware
 app.use(bodyParser.json());
+app.use(express.json())
 app.use(cors());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -210,26 +211,28 @@ app.get('/items/category/:id', async (req, res) => {
 
 //cofee
 // Create Coffee
-app.post('/coffee', upload.single('image'), async (req, res) => {
-  const { name, description, price, roastLevel, rating, size, category } = req.body;
+app.post('/coffee', async (req,res) => {
+  console.log(req.body);
+  
+  const { name, description, price, roastLevel, rating, size, category,image } = req.body;
 
-  if (!name || !price) {
-    return res.status(400).send({ error: 'Name and price are required' });
-  }
+  // if (!name || !price) {
+  //   return res.status(400).send({ error: 'Name and price are required' });
+  // }
 
   try {
     const newCoffee = new Coffee({
       name,
       description,
       price,
-      image: req.file ? `uploads/${req.file.filename}` : '',
+    image,
       roastLevel,
       rating,
       size,
       category // Handle category
     });
     const coffee = await newCoffee.save();
-    res.status(201).send(coffee);
+    res.status(200).send(coffee);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -453,6 +456,6 @@ app.get('/protected', auth, (req, res) => {
   res.status(200).send({ msg: 'This is a protected route', user: req.user });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(3000, () => {
+  console.log(`Server running on port .................................`);
 });
