@@ -73,15 +73,15 @@ const UserSchema = new mongoose.Schema({
   image: { type: String }
 });
 const CoffeeSchema = new mongoose.Schema({
-  name: String,
-  description: String,
-  price: Number,
-  image: String,
-  roastLevel: String,
-  rating: String,
-  size: String // Updated to be a single string
+  name: String,             // The name of the coffee blend or variety
+  description: String,      // A detailed description of the coffee’s flavor profile and characteristics
+  price: Number,            // The price of the coffee
+  image: String,            // The file path to an image of the coffee
+  roastLevel: String,       // The roast level of the coffee (e.g., Light, Medium, Dark)
+  rating: String,           // Average user rating for the coffee
+  size: String,             // Size available for the coffee (e.g., Small, Medium, Large)
+  category: String          // Category of the coffee (e.g., Espresso, Single-Origin, Blend)
 });
-
 const Coffee = mongoose.model('Coffee', CoffeeSchema);
 
 
