@@ -211,32 +211,16 @@ app.get('/items/category/:id', async (req, res) => {
 
 //cofee
 // Create Coffee
-app.post('/coffee', async (req,res) => {
-  console.log(req.body);
-  
-  const { name, description, price, roastLevel, rating, size, category,image } = req.body;
-
-  // if (!name || !price) {
-  //   return res.status(400).send({ error: 'Name and price are required' });
-  // }
-
+app.post('/coffee', async (req, res) => {
+  const newCoffee = new Coffee(req.body);
   try {
-    const newCoffee = new Coffee({
-      name,
-      description,
-      price,
-    image,
-      roastLevel,
-      rating,
-      size,
-      category // Handle category
-    });
     const coffee = await newCoffee.save();
-    res.status(200).send(coffee);
+    res.status(201).send(coffee);
   } catch (err) {
     res.status(400).send(err);
   }
 });
+
 
 
 // Read Coffee (All)
