@@ -212,14 +212,18 @@ app.get('/items/category/:id', async (req, res) => {
 //cofee
 // Create Coffee
 app.post('/coffee', async (req, res) => {
+  console.log('Request Body:', req.body); // Log the incoming request body
   const newCoffee = new Coffee(req.body);
   try {
     const coffee = await newCoffee.save();
+    console.log('Saved Coffee:', coffee); // Log the saved coffee item
     res.status(201).send(coffee);
   } catch (err) {
+    console.error('Error:', err); // Log any errors
     res.status(400).send(err);
   }
 });
+
 
 
 
